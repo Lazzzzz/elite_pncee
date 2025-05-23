@@ -48,6 +48,10 @@
                                 class="text-blue-600 hover:text-blue-800 transition duration-300 font-medium {{ request()->routeIs('monitoring') ? 'font-bold' : '' }}">
                                 Suivi
                             </a>
+                            <a href="{{ route('user-management') }}"
+                                class="text-blue-600 hover:text-blue-800 transition duration-300 font-medium {{ request()->routeIs('user-management') ? 'font-bold' : '' }}">
+                                Gestion des Utilisateurs
+                            </a>
                         @endif
                         <form action="{{ route('logout') }}" method="POST" class="inline">
                             @csrf

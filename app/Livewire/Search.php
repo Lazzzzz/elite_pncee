@@ -11,9 +11,21 @@ class Search extends Component
 {
     public $query = '';
     public $results = [];
+    public $searchPerformed = false;
+    public $showPdfViewer = false;
+    public $currentPdfUrl = '';
+    public $currentPdfTitle = '';
+
+    protected $listeners = ['keydown.escape' => 'closePdfViewer'];
+
+    public function updatedQuery()
+    {
+        $this->searchPerformed = false;
+    }
 
     public function search()
     {
+        $this->searchPerformed = true;
         $startTime = microtime(true);
 
         mt_srand(crc32($this->query));
@@ -54,7 +66,7 @@ class Search extends Component
             return [
                 'rapport_id' => $rapport->rapport_id,
                 'nom_rapport' => $rapport->nom_rapport,
-                'url_fichier' => env('PDF_PATH') . $rapport->rapport_id . '/' . $rapport->nom_rapport . '.pdf',
+                'url_fichier' => route('pdf.proxy', ['rapport_id' => $rapport->rapport_id, 'filename' => $rapport->nom_rapport]),
             ];
         })->toArray();
         $executionTime = microtime(true) - $startTime;
@@ -71,6 +83,7 @@ class Search extends Component
 
     public function lucky()
     {
+        $this->searchPerformed = true;
         $startTime = microtime(true);
         if (!Auth::user()->is_admin) {
 
@@ -90,8 +103,7 @@ class Search extends Component
                 [
                     'rapport_id' => $rapport->id,
                     'nom_rapport' => $rapport->nom_rapport,
-                    // Assurez-vous que nom_rapport est le nom de base sans .pdf pour la construction de l'URL
-                    'url_fichier' => env('PDF_PATH') . $rapport->id . '/' . $rapport->nom_rapport . '.pdf',
+                    'url_fichier' => route('pdf.proxy', ['rapport_id' => $rapport->id, 'filename' => $rapport->nom_rapport]),
                 ]
             ];
         } else {
@@ -128,7 +140,17 @@ class Search extends Component
             ]);
         }
 
-        return redirect($urlFichier);
+        // Utiliser la route proxy pour éviter les problèmes de CORS
+        $this->currentPdfUrl = route('pdf.proxy', ['rapport_id' => $rapportId, 'filename' => $nomRapport]);
+        $this->currentPdfTitle = $nomRapport;
+        $this->showPdfViewer = true;
+    }
+
+    public function closePdfViewer()
+    {
+        $this->showPdfViewer = false;
+        $this->currentPdfUrl = '';
+        $this->currentPdfTitle = '';
     }
 
     public function render()

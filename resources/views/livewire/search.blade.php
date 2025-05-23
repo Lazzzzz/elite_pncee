@@ -1,4 +1,82 @@
 <div>
+    <!-- Modal PDF Viewer -->
+    @if ($showPdfViewer)
+        <div class="fixed inset-0 z-50 overflow-hidden bg-black bg-opacity-75" wire:click="closePdfViewer">
+            <div class="flex items-center justify-center min-h-screen p-2 sm:p-4">
+                <div class="relative w-full max-w-7xl bg-white rounded-lg shadow-xl" wire:click.stop
+                    style="height: 90vh; max-height: 90vh;">
+
+                    <!-- Contenu PDF -->
+                    <div class="relative w-full h-full">
+                        <div id="pdf-loading"
+                            class="absolute inset-0 flex items-center justify-center bg-gray-100 z-10 rounded-lg">
+                            <div class="text-center">
+                                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4">
+                                </div>
+                                <p class="text-gray-600">Chargement du PDF...</p>
+                            </div>
+                        </div>
+                        <div wire:ignore class="w-full h-full">
+                            <iframe id="pdf-iframe"
+                                src="{{ asset('pdfjs/web/viewer.html') }}?file={{ urlencode($currentPdfUrl) }}#toolbar=0&navpanes=0&scrollbar=0"
+                                width="100%" height="100%" class="border-0 rounded-lg" style="min-height: 100%;"
+                                onload="document.getElementById('pdf-loading').style.display='none'">
+                            </iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Script pour gérer la modal PDF -->
+        @push('scripts')
+            <script>
+
+
+                // Gestionnaire pour la touche Escape
+                document.addEventListener('keydown', function(event) {
+                    if (event.key === 'Escape') {
+                        const modal = document.querySelector('.fixed.inset-0.z-50');
+                        if (modal) {
+                            @this.call('closePdfViewer');
+                        }
+                    }
+                });
+
+                // Désactiver le clic droit sur l'iframe PDF
+                document.addEventListener('DOMContentLoaded', function() {
+                    const iframe = document.getElementById('pdf-iframe');
+                    if (iframe) {
+                        iframe.addEventListener('contextmenu', function(e) {
+                            e.preventDefault();
+                            return false;
+                        });
+
+                        // Désactiver la sélection de texte
+                        iframe.style.userSelect = 'none';
+                        iframe.style.webkitUserSelect = 'none';
+                        iframe.style.mozUserSelect = 'none';
+                        iframe.style.msUserSelect = 'none';
+                    }
+                });
+
+                // Charger quand Livewire met à jour
+                document.addEventListener('livewire:updated', function() {
+                    const iframe = document.getElementById('pdf-iframe');
+                    if (iframe) {
+                        iframe.addEventListener('contextmenu', function(e) {
+                            e.preventDefault();
+                            return false;
+                        });
+                        iframe.style.userSelect = 'none';
+                        iframe.style.webkitUserSelect = 'none';
+                        iframe.style.mozUserSelect = 'none';
+                        iframe.style.msUserSelect = 'none';
+                    }
+                });
+            </script>
+        @endpush
+    @endif
+
     <div class="flex flex-col items-center justify-center pt-10">
         <div class="mb-8">
             <h1 class="font-light text-7xl">
@@ -44,20 +122,21 @@
                         <div class="space-y-2 search-results-container">
                             @foreach ($results as $result)
                                 <div wire:click.prevent="logPdfViewAndOpen({{ $result['rapport_id'] }}, '{{ addslashes($result['nom_rapport']) }}', '{{ $result['url_fichier'] }}')"
-                                    class="flex items-center justify-between p-3 transition-shadow duration-200 bg-white rounded-md shadow search-result-item hover:shadow-lg">
-                                    <div>
+                                    class="flex items-center justify-between p-3 transition-shadow duration-200 bg-white rounded-md shadow search-result-item hover:shadow-lg cursor-pointer">
+                                    <div class="flex-1 min-w-0">
                                         @if (isset($result['url_fichier']) && isset($result['rapport_id']))
-                                            <a class="font-medium text-blue-600 hover:text-blue-800 hover:underline">
+                                            <span class="font-medium text-blue-600 hover:text-blue-800 truncate block">
                                                 {{ $result['nom_rapport'] }}
-                                            </a>
+                                            </span>
                                         @elseif (isset($result['nom_rapport']))
-                                            <span class="text-gray-600">{{ $result['nom_rapport'] }}</span>
+                                            <span
+                                                class="text-gray-600 truncate block">{{ $result['nom_rapport'] }}</span>
                                         @endif
                                     </div>
-                                    <div class="ml-2 text-gray-400 hover:text-gray-600">
+                                    <div class="ml-2 text-gray-400 hover:text-gray-600 flex-shrink-0">
                                         <!-- Eye icon from Heroicons -->
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 cursor-pointer"
-                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -68,7 +147,7 @@
                             @endforeach
                         </div>
                     @endif
-                @elseif ($this->query !== '')
+                @elseif ($searchPerformed && $this->query !== '')
                     <p class="text-gray-500">Aucun résultat trouvé pour "{{ $this->query }}".</p>
                 @endif
             </div>

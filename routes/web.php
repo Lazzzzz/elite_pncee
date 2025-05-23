@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\MonitoringController;
+use App\Http\Controllers\UserManagementController;
 use App\Http\Middleware\AdminMiddleware;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -27,6 +28,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::middleware(['auth'])->group(function () {
     Route::get('/search', [SearchController::class, 'index'])->name('search');
     Route::get('/dashboard', [SearchController::class, 'index'])->name('dashboard');
+    Route::get('/pdf-proxy/{rapport_id}/{filename}', [SearchController::class, 'servePdf'])->name('pdf.proxy');
 });
 
 Route::middleware('auth')->group(function () {
@@ -39,5 +41,13 @@ Route::middleware('auth')->group(function () {
 Route::get('/monitoring', [MonitoringController::class, 'index'])
     ->middleware(['auth', AdminMiddleware::class])
     ->name('monitoring');
+
+// User Management Routes - requires admin access
+Route::middleware(['auth', AdminMiddleware::class])->group(function () {
+    Route::get('/user-management', [UserManagementController::class, 'index'])->name('user-management');
+    Route::post('/user-management', [UserManagementController::class, 'store'])->name('user-management.store');
+    Route::put('/user-management/{user}', [UserManagementController::class, 'update'])->name('user-management.update');
+    Route::delete('/user-management/{user}', [UserManagementController::class, 'destroy'])->name('user-management.destroy');
+});
 
 require __DIR__ . '/auth.php';
