@@ -16,8 +16,7 @@
 
                 <div class="mb-3">
                     <label for="email" class="form-label">Email</label>
-                    <input id="email" type="email" name="email" class="form-control" value="admin@example.com"
-                        required autofocus>
+                    <input id="email" type="email" name="email" class="form-control" required autofocus>
                     @error('email')
                         <div class="mt-1 text-danger">{{ $message }}</div>
                     @enderror
@@ -25,7 +24,7 @@
 
                 <div class="mb-3">
                     <label for="password" class="form-label">Mot de passe</label>
-                    <input id="password" type="password" name="password" class="form-control" value="password" required>
+                    <input id="password" type="password" name="password" class="form-control" required>
                     @error('password')
                         <div class="mt-1 text-danger">{{ $message }}</div>
                     @enderror

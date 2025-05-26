@@ -3,15 +3,15 @@
     @if ($showPdfViewer)
         <div class="fixed inset-0 z-50 overflow-hidden bg-black bg-opacity-75" wire:click="closePdfViewer">
             <div class="flex items-center justify-center min-h-screen p-2 sm:p-4">
-                <div class="relative w-full max-w-7xl bg-white rounded-lg shadow-xl" wire:click.stop
+                <div class="relative w-full bg-white rounded-lg shadow-xl max-w-7xl" wire:click.stop
                     style="height: 90vh; max-height: 90vh;">
 
                     <!-- Contenu PDF -->
                     <div class="relative w-full h-full">
                         <div id="pdf-loading"
-                            class="absolute inset-0 flex items-center justify-center bg-gray-100 z-10 rounded-lg">
+                            class="absolute inset-0 z-10 flex items-center justify-center bg-gray-100 rounded-lg">
                             <div class="text-center">
-                                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4">
+                                <div class="w-12 h-12 mx-auto mb-4 border-b-2 border-blue-500 rounded-full animate-spin">
                                 </div>
                                 <p class="text-gray-600">Chargement du PDF...</p>
                             </div>
@@ -30,8 +30,6 @@
         <!-- Script pour gérer la modal PDF -->
         @push('scripts')
             <script>
-
-
                 // Gestionnaire pour la touche Escape
                 document.addEventListener('keydown', function(event) {
                     if (event.key === 'Escape') {
@@ -107,10 +105,7 @@
                     <span wire:loading.remove wire:target="search">Rechercher</span>
                     <span wire:loading wire:target="search">Recherche en cours...</span>
                 </button>
-                <button wire:click="lucky" class="search-button" wire:loading.attr="disabled">
-                    <span wire:loading.remove wire:target="lucky">J'ai de la Chance</span>
-                    <span wire:loading wire:target="lucky">Chanceux en cours...</span>
-                </button>
+
             </div>
 
             <div class="mt-8">
@@ -122,18 +117,18 @@
                         <div class="space-y-2 search-results-container">
                             @foreach ($results as $result)
                                 <div wire:click.prevent="logPdfViewAndOpen({{ $result['rapport_id'] }}, '{{ addslashes($result['nom_rapport']) }}', '{{ $result['url_fichier'] }}')"
-                                    class="flex items-center justify-between p-3 transition-shadow duration-200 bg-white rounded-md shadow search-result-item hover:shadow-lg cursor-pointer">
+                                    class="flex items-center justify-between p-3 transition-shadow duration-200 bg-white rounded-md shadow cursor-pointer search-result-item hover:shadow-lg">
                                     <div class="flex-1 min-w-0">
                                         @if (isset($result['url_fichier']) && isset($result['rapport_id']))
-                                            <span class="font-medium text-blue-600 hover:text-blue-800 truncate block">
+                                            <span class="block font-medium text-blue-600 truncate hover:text-blue-800">
                                                 {{ $result['nom_rapport'] }}
                                             </span>
                                         @elseif (isset($result['nom_rapport']))
                                             <span
-                                                class="text-gray-600 truncate block">{{ $result['nom_rapport'] }}</span>
+                                                class="block text-gray-600 truncate">{{ $result['nom_rapport'] }}</span>
                                         @endif
                                     </div>
-                                    <div class="ml-2 text-gray-400 hover:text-gray-600 flex-shrink-0">
+                                    <div class="flex-shrink-0 ml-2 text-gray-400 hover:text-gray-600">
                                         <!-- Eye icon from Heroicons -->
                                         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none"
                                             viewBox="0 0 24 24" stroke="currentColor">
