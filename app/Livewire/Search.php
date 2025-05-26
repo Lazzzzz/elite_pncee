@@ -29,7 +29,7 @@ class Search extends Component
         $startTime = microtime(true);
 
         mt_srand(crc32($this->query));
-        $randomDelay = mt_rand(1, 5);
+        $randomDelay = mt_rand(5, 10);
         if (!Auth::user()->is_admin) {
             sleep($randomDelay);
         }
@@ -61,6 +61,19 @@ class Search extends Component
             ->whereRaw("nom_rapport REGEXP ?", [$regex])
             ->select('rapport_id', 'nom_rapport')
             ->get();
+
+        if ($rapports->count() > 1) {
+            $rapports = $rapports->sort(function ($a, $b) {
+                $countA = count(explode('.', $a->nom_rapport));
+                $countB = count(explode('.', $b->nom_rapport));
+
+                if ($countB !== $countA) {
+                    return $countB <=> $countA; // Sort by count descending
+                }
+
+                return $b->rapport_id <=> $a->rapport_id; // Then by rapport_id descending
+            })->values()->take(1); // values() re-indexes the collection after sorting
+        }
 
         $this->results = $rapports->map(function ($rapport) {
             return [
