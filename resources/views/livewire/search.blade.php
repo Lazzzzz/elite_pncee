@@ -6,12 +6,24 @@
                 <div class="relative w-full bg-white rounded-lg shadow-xl max-w-7xl" wire:click.stop
                     style="height: 90vh; max-height: 90vh;">
 
+                    <!-- Bouton de fermeture -->
+                    <button wire:click="closePdfViewer"
+                        class="absolute top-0 right-0 z-20 p-2 mt-2 mr-2 text-gray-500 rounded-full hover:bg-gray-200 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+                        aria-label="Close PDF viewer">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+
                     <!-- Contenu PDF -->
                     <div class="relative w-full h-full">
                         <div id="pdf-loading"
                             class="absolute inset-0 z-10 flex items-center justify-center bg-gray-100 rounded-lg">
                             <div class="text-center">
-                                <div class="w-12 h-12 mx-auto mb-4 border-b-2 border-blue-500 rounded-full animate-spin">
+                                <div
+                                    class="w-12 h-12 mx-auto mb-4 border-b-2 border-blue-500 rounded-full animate-spin">
                                 </div>
                                 <p class="text-gray-600">Chargement du PDF...</p>
                             </div>
