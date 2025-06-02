@@ -65,6 +65,11 @@
                 </div>
             </div>
 
+            <!-- Rapport Filter Section - Livewire Component -->
+            <div class="mt-8">
+                @livewire('rapport-filter')
+            </div>
+
             <!-- Search History Table - Livewire Component -->
             <div class="mt-8">
                 @livewire('monitoring.search-history')

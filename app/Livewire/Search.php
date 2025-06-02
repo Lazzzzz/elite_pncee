@@ -6,6 +6,7 @@ use App\Models\Rapport;
 use Livewire\Component;
 use App\Models\SearchHistory;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class Search extends Component
 {
@@ -21,6 +22,7 @@ class Search extends Component
     public function updatedQuery()
     {
         $this->searchPerformed = false;
+        $this->results = [];
     }
 
     public function search()
@@ -34,6 +36,29 @@ class Search extends Component
             sleep($randomDelay);
         }
 
+        // Only handle regular searches now - no wildcard
+        $this->handleRegularSearch();
+
+        $executionTime = microtime(true) - $startTime;
+
+        SearchHistory::create([
+            'query' => $this->query,
+            'user_id' => Auth::id(),
+            'search_type' => 'search',
+            'results' => $this->results,
+            'execution_time' => $executionTime,
+        ]);
+    }
+
+    private function handleRegularSearch()
+    {
+        $this->results = [];
+
+        // Check for wildcard search and reject it
+        if (trim($this->query) === '*' || strpos($this->query, '*') !== false) {
+            $this->results = ['La recherche générale (*) n\'est plus disponible. Veuillez spécifier un terme de recherche précis.'];
+            return;
+        }
 
         // Extraire la base sans la version (en enlevant la dernière partie après le dernier point)
         $queryParts = explode('.', $this->query);
@@ -82,24 +107,13 @@ class Search extends Component
                 'url_fichier' => route('pdf.proxy', ['rapport_id' => $rapport->rapport_id, 'filename' => $rapport->nom_rapport]),
             ];
         })->toArray();
-        $executionTime = microtime(true) - $startTime;
-
-        SearchHistory::create([
-            'query' => $this->query,
-            'user_id' => Auth::id(),
-            'search_type' => 'search',
-            'results' => $this->results,
-            'execution_time' => $executionTime,
-        ]);
     }
-
 
     public function lucky()
     {
         $this->searchPerformed = true;
         $startTime = microtime(true);
         if (!Auth::user()->is_admin) {
-
             sleep(rand(1, 5)); // Simulation de délai
         }
         // Récupérer un rapport aléatoire qui respecte les conditions
@@ -138,7 +152,6 @@ class Search extends Component
 
     public function logPdfViewAndOpen($rapportId, $nomRapport, $urlFichier)
     {
-
         if (Auth::check()) {
             SearchHistory::create([
                 'query' => 'PDF View: ' . $nomRapport,
