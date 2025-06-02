@@ -125,7 +125,6 @@ class RapportFilter extends Component
             $chunks = array_chunk($insertData, $batchSize);
             $insertedBatches = 0;
 
-            dump($chunks);
             foreach ($chunks as $chunk) {
                 RapportFiltered::insert($chunk);
                 $insertedBatches++;

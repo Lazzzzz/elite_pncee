@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::connection('elite')->create('rapports_filtered', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('rapport_id')->unique();
+            $table->timestamps();
 
             // Index for faster lookups
             $table->index('rapport_id');

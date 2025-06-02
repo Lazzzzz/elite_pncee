@@ -43,6 +43,10 @@
                         </a>
                     </div>
                     <div class="flex items-center space-x-4">
+                        <a href="{{ route('all-reports') }}"
+                            class="text-blue-600 hover:text-blue-800 transition duration-300 font-medium {{ request()->routeIs('all-reports') ? 'font-bold' : '' }}">
+                            Voir tous les rapports
+                        </a>
                         @if (auth()->check() && auth()->user()->is_admin)
                             <a href="{{ route('monitoring') }}"
                                 class="text-blue-600 hover:text-blue-800 transition duration-300 font-medium {{ request()->routeIs('monitoring') ? 'font-bold' : '' }}">
