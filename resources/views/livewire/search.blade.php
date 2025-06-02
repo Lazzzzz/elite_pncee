@@ -137,6 +137,7 @@
                 </div>
             @endif
 
+            <!-- Search Results -->
             <div class="mt-8">
                 @if (!empty($results))
                     @if (isset($results[0]) && is_string($results[0]))
@@ -180,4 +181,154 @@
             </div>
         </div>
     </div>
+
+    <!-- All Reports Section - Only show when no search is performed -->
+    @if ($allReportsData && !$searchPerformed && empty(trim($query)))
+        <div class="px-4 mx-auto mt-16 mb-8 max-w-7xl sm:px-6 lg:px-8">
+            <!-- Section Header -->
+            <div class="mb-8 text-center">
+                <h2 class="text-3xl font-bold text-gray-900">Tous les Rapports</h2>
+                <p class="mt-2 text-gray-600">Parcourez tous les rapports disponibles</p>
+
+                <div class="flex items-center justify-center gap-2 mt-4">
+                    <label for="perPage" class="text-sm font-medium text-gray-700">
+                        Éléments par page :
+                    </label>
+                    <select wire:model.live="perPage" id="perPage"
+                        class="block px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+            </div>
+
+
+
+            <!-- Results Info -->
+            @if ($allReportsData['rapports']->total() > 0)
+                <div class="mb-6 bg-white rounded-lg shadow">
+                    <div class="p-4 border-b border-gray-200">
+                        <p class="text-sm text-gray-700">
+                            Affichage des lignes
+                            {{ ($allReportsData['rapports']->currentPage() - 1) * $allReportsData['rapports']->perPage() + 1 }}
+                            -
+                            {{ min($allReportsData['rapports']->currentPage() * $allReportsData['rapports']->perPage(), $allReportsData['rapports']->total()) }}
+                            (total de {{ number_format($allReportsData['rapports']->total()) }}, traitement en
+                            {{ number_format($allReportsData['executionTime'], 4) }} seconde(s).)
+                        </p>
+                    </div>
+                </div>
+            @endif
+
+            <!-- Reports Table -->
+            <div class="overflow-hidden bg-white rounded-lg shadow">
+                @if ($allReportsData['rapports']->count() > 0)
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col"
+                                        class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase cursor-pointer hover:bg-gray-100"
+                                        wire:click="sortBy('nom_rapport')">
+                                        <div class="flex items-center space-x-1">
+                                            <span>Nom du Rapport</span>
+                                            @if ($sortBy === 'nom_rapport')
+                                                @if ($sortDirection === 'asc')
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2" d="M5 15l7-7 7 7"></path>
+                                                    </svg>
+                                                @else
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                                    </svg>
+                                                @endif
+                                            @endif
+                                        </div>
+                                    </th>
+                                    <th scope="col"
+                                        class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase cursor-pointer hover:bg-gray-100"
+                                        wire:click="sortBy('date_rapport')">
+                                        <div class="flex items-center space-x-1">
+                                            <span>Date</span>
+                                            @if ($sortBy === 'date_rapport')
+                                                @if ($sortDirection === 'asc')
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2" d="M5 15l7-7 7 7"></path>
+                                                    </svg>
+                                                @else
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                                    </svg>
+                                                @endif
+                                            @endif
+                                        </div>
+                                    </th>
+                                    <th scope="col"
+                                        class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                        Actions
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @foreach ($allReportsData['rapports'] as $rapport)
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-6 py-4 text-sm text-gray-900">
+                                            <div class="max-w-md" title="{{ $rapport->nom_rapport }}">
+                                                {{ $rapport->nom_rapport }}
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
+                                            {{ $rapport->date_rapport ? \Carbon\Carbon::parse($rapport->date_rapport)->format('d/m/Y') : '-' }}
+                                        </td>
+                                        <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
+                                            <button
+                                                wire:click.prevent="logPdfViewAndOpen({{ $rapport->rapport_id }}, '{{ addslashes($rapport->nom_rapport) }}', '{{ route('pdf.proxy', ['rapport_id' => $rapport->rapport_id, 'filename' => $rapport->nom_rapport]) }}')"
+                                                class="inline-flex items-center px-3 py-1 text-sm font-medium leading-4 text-white transition duration-150 ease-in-out bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                                                    </path>
+                                                </svg>
+                                                Voir
+                                            </button>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="px-4 py-3 bg-white border-t border-gray-200 sm:px-6">
+                        {{ $allReportsData['rapports']->links() }}
+                    </div>
+                @else
+                    <div class="py-12 text-center">
+                        <svg class="w-12 h-12 mx-auto text-gray-400" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                            </path>
+                        </svg>
+                        <h3 class="mt-2 text-sm font-medium text-gray-900">Aucun rapport trouvé</h3>
+                        <p class="mt-1 text-sm text-gray-500">Aucun rapport disponible pour le moment.</p>
+                    </div>
+                @endif
+            </div>
+        </div>
+    @endif
 </div>

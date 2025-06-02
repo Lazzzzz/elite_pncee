@@ -4,12 +4,15 @@ namespace App\Livewire;
 
 use App\Models\Rapport;
 use Livewire\Component;
+use Livewire\WithPagination;
 use App\Models\SearchHistory;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class Search extends Component
 {
+    use WithPagination;
+
     public $query = '';
     public $results = [];
     public $searchPerformed = false;
@@ -17,12 +20,35 @@ class Search extends Component
     public $currentPdfUrl = '';
     public $currentPdfTitle = '';
 
+    // All reports properties
+    public $sortBy = 'rapport_id';
+    public $sortDirection = 'desc';
+    public $perPage = 25;
+
+    protected $queryString = [
+        'sortBy' => ['except' => 'rapport_id'],
+        'sortDirection' => ['except' => 'desc'],
+        'perPage' => ['except' => 25],
+    ];
+
     protected $listeners = ['keydown.escape' => 'closePdfViewer'];
 
     public function updatedQuery()
     {
         $this->searchPerformed = false;
         $this->results = [];
+        $this->resetPage(); // Reset pagination when query changes
+    }
+
+    public function sortBy($field)
+    {
+        if ($this->sortBy === $field) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortBy = $field;
+            $this->sortDirection = 'asc';
+        }
+        $this->resetPage(); // Reset pagination when sorting changes
     }
 
     public function search()
@@ -179,8 +205,38 @@ class Search extends Component
         $this->currentPdfTitle = '';
     }
 
+    private function getAllReports()
+    {
+        $startTime = microtime(true);
+
+        $rapports = Rapport::query()
+            ->where('validation', '1')
+            ->where(function ($q) {
+                $q->where('rapport_parent', 0)
+                    ->orWhereNull('rapport_parent');
+            })
+            ->orderBy($this->sortBy, $this->sortDirection)
+            ->paginate($this->perPage);
+
+        $executionTime = microtime(true) - $startTime;
+
+        return [
+            'rapports' => $rapports,
+            'executionTime' => $executionTime
+        ];
+    }
+
     public function render()
     {
-        return view('livewire.search');
+        $allReportsData = null;
+
+        // Show all reports only if no search has been performed or query is empty
+        if (!$this->searchPerformed && empty(trim($this->query))) {
+            $allReportsData = $this->getAllReports();
+        }
+
+        return view('livewire.search', [
+            'allReportsData' => $allReportsData
+        ]);
     }
 }

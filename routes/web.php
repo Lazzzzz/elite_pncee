@@ -29,11 +29,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/search', [SearchController::class, 'index'])->name('search');
     Route::get('/dashboard', [SearchController::class, 'index'])->name('dashboard');
     Route::get('/pdf-proxy/{rapport_id}/{filename}', [SearchController::class, 'servePdf'])->name('pdf.proxy');
-
-    // All Reports page
-    Route::get('/all-reports', function () {
-        return view('all-reports');
-    })->name('all-reports');
 });
 
 Route::middleware('auth')->group(function () {
