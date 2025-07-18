@@ -273,7 +273,6 @@
     </div>
 @endsection
 
-@section('scripts')
 <script>
     function openModal(modalId) {
         document.getElementById(modalId).classList.remove('hidden');
@@ -324,5 +323,4 @@
             @endif
         @endif
     });
-</script>
-@endsection 
+</script> 
